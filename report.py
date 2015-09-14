@@ -2,6 +2,7 @@
 
 import sys
 import datetime
+import csv
 from unifi.controller import *
 # stores unifi controller info
 import config
@@ -26,6 +27,15 @@ if today.year != yesterday.year:
 def get_api_controller(site):
     return Controller(config.ip,config.uname,config.pswd,config.port,config.version,site)
 
+def write_csv(data,site,yearly):
+    if yearly == 0:
+        with open(site+str(today)+".csv", "w") as file:
+            file.write('date,users,bytes\n')
+            for item in data:
+                if 'num_sta' in item:
+                    file.write(str(datetime.date.fromtimestamp(item["time"]/1000))+','+str(item["num_sta"])+','+str(item["bytes"])+'\n')
+    
+
 def process_site(site):
     api = get_api_controller(site)
 
@@ -37,13 +47,13 @@ def process_site(site):
     # calculate report duration
     duration = datetime.datetime.combine(yesterday.replace(day=1),datetime.time.min)
     # convert to timestamp
-    duration = float(duration.strftime("%s"))
+    duration = endtime - float(duration.strftime("%s"))
 
     # now, call the unifi api to get the data in json format
     data = api.get_daily_statistics(endtime,duration)
 
-    for i in data:
-        print i
+    # write the data to a csv file
+    write_csv(data,site,yearly)
 
 # iterate through all sites, writing out report files
 for site in sites:
