@@ -177,6 +177,12 @@ class Controller:
 
         return self.get_statistics_24h(time())
 
+    def get_daily_statistics(self,endtime,duration):
+        js = json.dumps(
+            {'attrs': ["bytes", "num_sta", "time"], 'start': int(endtime - duration) * 1000, 'end': int(endtime - 3600) * 1000})
+        params = urllib.urlencode({'json': js})
+        return self._read(self.api_url + 'stat/report/daily.site', params)
+
     def get_statistics_24h(self, endtime):
         """Return statistical data last 24h from time"""
 
