@@ -29,7 +29,7 @@ def get_api_controller(site):
 
 def write_csv(data,site,yearly):
     if yearly == 0:
-        with open(site+str(today)+".csv", "w") as file:
+        with open(site+today.strftime("%Y-%m")+".csv", "w") as file:
             file.write('date,users,bytes\n')
             for item in data:
                 if 'num_sta' in item:
