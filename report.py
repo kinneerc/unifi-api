@@ -7,12 +7,25 @@ from unifi.controller import *
 # stores unifi controller info
 import config
 
-# list of sites
-# this is what appears on the unifi web management url as such,
+# first, the dictionary of library names, email addresses to send reports, and 
+# the unifi site name
+# the site is what appears on the unifi web management url as such,
 # https://unifi.ccfls.org:8443/manage/s/benson/statistics
 # the site name in this example is benson
 # note that MPL is default
-sites = ['benson','cambridgesprings','cochrantonwireless','linesville','default','saegertown','shontz','springboro','stone']
+# the email field will be where reports for this library are sent
+# the name field is how the library name will appear on the report for formatting purposes
+
+libs = [{'site':'benson','email':'justin.hoenke@ccfls.org','name':'Benson'},
+        {'site':'cambridgesprings','email':'cspl@ccfls.org','name':'Cambridge'},
+        {'site':'cochrantonwireless','email':'capl@ccfls.org','name':'Cochranton'},
+        {'site':'linesville','email':'lcpl@ccfls.org','name':'Linesville'},
+        {'site':'default','email':'aporter@ccfls.org','name':'Meadville'},
+        {'site':'saegertown','email':'sal@ccfls.org','name':'Saegertown'},
+        {'site':'shontz','email':'shontpl@ccfls.org','name':'Shontz'},
+        {'site':'springboro','email':'springboropl@ccfls.org','name':'Springboro'},
+        {'site':'stone','email':'stone@ccfls.org','name':'Stone'}]
+
 
 # take note of the date
 today = datetime.date.today()
@@ -30,14 +43,14 @@ def get_api_controller(site):
 def write_csv(data,site,yearly):
     if yearly == 0:
         with open(site+today.strftime("%Y-%m")+".csv", "w") as file:
-            file.write('date,users,bytes\n')
+            file.write('Date,Users,Gigabytes\n')
             for item in data:
                 if 'num_sta' in item:
-                    file.write(str(datetime.date.fromtimestamp(item["time"]/1000))+','+str(item["num_sta"])+','+str(item["bytes"])+'\n')
+                    file.write(str(datetime.date.fromtimestamp(item["time"]/1000))+','+str(item["num_sta"])+','+str(item["bytes"]*1e-9)+'\n')
     
 
-def process_site(site):
-    api = get_api_controller(site)
+def process_site(lib):
+    api = get_api_controller(lib['site'])
 
     # first, we'll perform a monthly report for the past month
     # get the latest possible time from yesterday for the end time
@@ -53,8 +66,8 @@ def process_site(site):
     data = api.get_daily_statistics(endtime,duration)
 
     # write the data to a csv file
-    write_csv(data,site,yearly)
+    write_csv(data,lib['name'],yearly)
 
 # iterate through all sites, writing out report files
-for site in sites:
-    process_site(site)
+for lib in libs:
+    process_site(lib)
