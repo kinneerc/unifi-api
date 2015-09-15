@@ -1,9 +1,12 @@
 #!/usr/bin/python
 
 import datetime
+from os.path import basename
 # needed for email
 import smtplib
 from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.application import MIMEApplication
 # unifi api from https://github.com/unifi-hackers/unifi-api
 from unifi.controller import *
 # stores unifi controller info
@@ -31,7 +34,6 @@ libs = [{'site':'benson','email':'justin.hoenke@ccfls.org','name':'Benson'},
         {'site':'springboro','email':'springboropl@ccfls.org','name':'Springboro'},
         {'site':'stone','email':'stone@ccfls.org','name':'Stone'}]
 
-
 # take note of the date
 today = datetime.date.today()
 # take note of yesterday
@@ -47,7 +49,7 @@ def get_api_controller(site):
 
 def write_csv(data,site,yearly):
     if yearly == 0:
-        with open(site+today.strftime("%Y-%m")+".csv", "w") as file:
+        with open(site+today.strftime("%Y-%m")+".csv", "r+") as file:
             file.write('Date,Users,Gigabytes\n')
             for item in data:
                 if 'num_sta' in item:
@@ -58,10 +60,15 @@ def write_csv(data,site,yearly):
             msg['From'] = fromAddr
             #msg['To'] = ', '.join([site['email'],itAddr])
             msg['To'] = ', '.join(['royokou@gmail.com'])
-            msg.preamble = site+' wifi usage for '+today.strftime("%Y-%m")
-            msg.attach(file)
+            msg.attach(MIMEText(site+' wifi usage for '+today.strftime("%Y-%m")))
 
-            s = smtplib.SMTP('localhost')
+            msg.attach(MIMEApplication(
+                file.read(),
+                Content_Disposition='attachment; filename="%s"' % basename(file),
+                Name=basename(file)
+                ))
+
+            s = smtplib.SMTP('smtp-relay.gmail.com')
             #s.sendmail(fromAddr,[site['email'],itAddr],msg.as_string())
             s.sendmail(fromAddr,['royokou@gmail.com'],msg.as_string())
             s.quit()
