@@ -49,12 +49,13 @@ def get_api_controller(site):
 def write_csv(data,site,yearly):
     if yearly == 0:
         filename = site+today.strftime("%Y-%m")+".csv"
-        with open(filename, "r+") as file:
+        with open(filename, "w") as file:
             file.write('Date,Users,Gigabytes\n')
             for item in data:
                 if 'num_sta' in item:
                     file.write(str(datetime.date.fromtimestamp(item["time"]/1000))+','+str(item["num_sta"])+','+str(item["bytes"]*1e-9)+'\n')
 
+        with open(filename, "r") as file:
             msg = MIMEMultipart()
             msg['Subject']= 'Wifi Usage Report'
             msg['From'] = fromAddr
