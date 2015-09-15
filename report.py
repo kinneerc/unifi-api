@@ -1,7 +1,6 @@
 #!/usr/bin/python
 
 import datetime
-from os.path import basename
 # needed for email
 import smtplib
 from email.mime.multipart import MIMEMultipart
@@ -49,7 +48,8 @@ def get_api_controller(site):
 
 def write_csv(data,site,yearly):
     if yearly == 0:
-        with open(site+today.strftime("%Y-%m")+".csv", "r+") as file:
+        filename = site+today.strftime("%Y-%m")+".csv"
+        with open(filename, "r+") as file:
             file.write('Date,Users,Gigabytes\n')
             for item in data:
                 if 'num_sta' in item:
@@ -64,8 +64,8 @@ def write_csv(data,site,yearly):
 
             msg.attach(MIMEApplication(
                 file.read(),
-                Content_Disposition='attachment; filename="%s"' % basename(file),
-                Name=basename(file)
+                Content_Disposition='attachment; filename="%s"' % filename,
+                Name=filename
                 ))
 
             s = smtplib.SMTP('smtp-relay.gmail.com')
