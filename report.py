@@ -59,8 +59,8 @@ def write_csv(data,site,yearly):
             msg = MIMEMultipart()
             msg['Subject']= 'Wifi Usage Report'
             msg['From'] = fromAddr
-            #msg['To'] = ', '.join([site['email'],itAddr])
-            msg['To'] = ', '.join(['royokou@gmail.com'])
+            msg['To'] = ', '.join([site['email'],itAddr])
+            #msg['To'] = ', '.join(['royokou@gmail.com'])
             msg.attach(MIMEText(site+' wifi usage for '+today.strftime("%Y-%m")))
 
             msg.attach(MIMEApplication(
@@ -70,8 +70,8 @@ def write_csv(data,site,yearly):
                 ))
 
             s = smtplib.SMTP('smtp-relay.gmail.com')
-            #s.sendmail(fromAddr,[site['email'],itAddr],msg.as_string())
-            s.sendmail(fromAddr,['royokou@gmail.com'],msg.as_string())
+            s.sendmail(fromAddr,[site['email'],itAddr],msg.as_string())
+            #s.sendmail(fromAddr,['royokou@gmail.com'],msg.as_string())
             s.quit()
 
 def process_site(lib):
