@@ -1,8 +1,10 @@
 #!/usr/bin/python
 
-import sys
 import datetime
-import csv
+# needed for email
+import smtplib
+from email.mime.multipart import MIMEMultipart
+# unifi api from https://github.com/unifi-hackers/unifi-api
 from unifi.controller import *
 # stores unifi controller info
 import config
@@ -15,6 +17,9 @@ import config
 # note that MPL is default
 # the email field will be where reports for this library are sent
 # the name field is how the library name will appear on the report for formatting purposes
+
+itAddr = "cmurdock@ccfls.org"
+fromAddr = "unifi@ccfls.org"
 
 libs = [{'site':'benson','email':'justin.hoenke@ccfls.org','name':'Benson'},
         {'site':'cambridgesprings','email':'cspl@ccfls.org','name':'Cambridge'},
@@ -47,7 +52,19 @@ def write_csv(data,site,yearly):
             for item in data:
                 if 'num_sta' in item:
                     file.write(str(datetime.date.fromtimestamp(item["time"]/1000))+','+str(item["num_sta"])+','+str(item["bytes"]*1e-9)+'\n')
-    
+
+            msg = MIMEMultipart()
+            msg['Subject']= 'Wifi Usage Report'
+            msg['From'] = fromAddr
+            #msg['To'] = ', '.join([site['email'],itAddr])
+            msg['To'] = ', '.join(['royokou@gmail.com'])
+            msg.preamble = site+' wifi usage for '+today.strftime("%Y-%m")
+            msg.attach(file)
+
+            s = smtplib.SMTP('localhost')
+            #s.sendmail(fromAddr,[site['email'],itAddr],msg.as_string())
+            s.sendmail(fromAddr,['royokou@gmail.com'],msg.as_string())
+            s.quit()
 
 def process_site(lib):
     api = get_api_controller(lib['site'])
