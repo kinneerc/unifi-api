@@ -48,7 +48,7 @@ def get_api_controller(site):
 
 def write_csv(data,site,yearly):
     if yearly == 0:
-        filename = site+today.strftime("%Y-%m")+".csv"
+        filename = str(site['site'])+today.strftime("%Y-%m")+".csv"
         with open(filename, "w") as file:
             file.write('Date,Users,Gigabytes\n')
             for item in data:
@@ -60,8 +60,8 @@ def write_csv(data,site,yearly):
             msg['Subject']= 'Wifi Usage Report'
             msg['From'] = fromAddr
             msg['To'] = ', '.join([site['email'],itAddr])
-            #msg['To'] = ', '.join(['royokou@gmail.com'])
-            msg.attach(MIMEText(site+' wifi usage for '+today.strftime("%Y-%m")))
+            #msg['To'] = ', '.join(['royokou@gmail.com',itAddr])
+            msg.attach(MIMEText(site['site']+' wifi usage for '+today.strftime("%Y-%m")))
 
             msg.attach(MIMEApplication(
                 file.read(),
@@ -71,7 +71,7 @@ def write_csv(data,site,yearly):
 
             s = smtplib.SMTP('smtp-relay.gmail.com')
             s.sendmail(fromAddr,[site['email'],itAddr],msg.as_string())
-            #s.sendmail(fromAddr,['royokou@gmail.com'],msg.as_string())
+            #s.sendmail(fromAddr,['royokou@gmail.com',itAddr],msg.as_string())
             s.quit()
 
 def process_site(lib):
@@ -91,7 +91,7 @@ def process_site(lib):
     data = api.get_daily_statistics(endtime,duration)
 
     # write the data to a csv file
-    write_csv(data,lib['name'],yearly)
+    write_csv(data,lib,yearly)
 
 # iterate through all sites, writing out report files
 for lib in libs:
