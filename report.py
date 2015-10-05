@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+import sys
 import datetime
 # needed for email
 import smtplib
@@ -23,6 +24,8 @@ import config
 itAddr = "cmurdock@ccfls.org"
 fromAddr = "unifi@ccfls.org"
 
+email = 1
+
 libs = [{'site':'benson','email':'justin.hoenke@ccfls.org','name':'Benson'},
         {'site':'cambridgesprings','email':'cspl@ccfls.org','name':'Cambridge'},
         {'site':'cochrantonwireless','email':'capl@ccfls.org','name':'Cochranton'},
@@ -35,8 +38,16 @@ libs = [{'site':'benson','email':'justin.hoenke@ccfls.org','name':'Benson'},
 
 # take note of the date
 today = datetime.date.today()
+
+
+# or, optionally, the user specified date
+if len(sys.argv) > 1:
+    today = datetime.datetime.strptime(sys.argv[1],'%m/%Y')
+    email = 0 
+
 # take note of yesterday
 yesterday = today - datetime.timedelta(days=1)
+    
 # now check if a yearly report is needed
 # if today is the first day of the year, then the report is needed
 yearly = 0
@@ -55,24 +66,25 @@ def write_csv(data,site,yearly):
                 if 'num_sta' in item:
                     file.write(str(datetime.date.fromtimestamp(item["time"]/1000))+','+str(item["num_sta"])+','+str(item["bytes"]*1e-9)+'\n')
 
-        with open(filename, "r") as file:
-            msg = MIMEMultipart()
-            msg['Subject']= 'Wifi Usage Report'
-            msg['From'] = fromAddr
-            msg['To'] = ', '.join([site['email'],itAddr])
-            #msg['To'] = ', '.join(['royokou@gmail.com',itAddr])
-            msg.attach(MIMEText(site['site']+' wifi usage for '+today.strftime("%Y-%m")))
+        if email:
+            with open(filename, "r") as file:
+                msg = MIMEMultipart()
+                msg['Subject']= 'Wifi Usage Report'
+                msg['From'] = fromAddr
+                msg['To'] = ', '.join([site['email'],itAddr])
+                #msg['To'] = ', '.join(['royokou@gmail.com',itAddr])
+                msg.attach(MIMEText(site['site']+' wifi usage for '+today.strftime("%Y-%m")))
 
-            msg.attach(MIMEApplication(
-                file.read(),
-                Content_Disposition='attachment; filename="%s"' % filename,
-                Name=filename
-                ))
+                msg.attach(MIMEApplication(
+                    file.read(),
+                    Content_Disposition='attachment; filename="%s"' % filename,
+                    Name=filename
+                    ))
 
-            s = smtplib.SMTP('smtp-relay.gmail.com')
-            s.sendmail(fromAddr,[site['email'],itAddr],msg.as_string())
-            #s.sendmail(fromAddr,['royokou@gmail.com',itAddr],msg.as_string())
-            s.quit()
+                s = smtplib.SMTP('smtp-relay.gmail.com')
+                s.sendmail(fromAddr,[site['email'],itAddr],msg.as_string())
+                #s.sendmail(fromAddr,['royokou@gmail.com',itAddr],msg.as_string())
+                s.quit()
 
 def process_site(lib):
     api = get_api_controller(lib['site'])
